@@ -1,0 +1,12 @@
+{% extends 'sorular/base.html' %}
+
+{% block title %}Giriş Yap{% endblock %}
+
+{% block content %}
+  <h2>Giriş Yap</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Giriş Yap</button>
+  </form>
+{% endblock %}

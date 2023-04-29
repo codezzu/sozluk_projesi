@@ -1,0 +1,109 @@
+<div class="card">
+  <div class="card-header">
+    {{ soru.baslik }}
+  </div>
+  <div class="card-body">
+    <p class="card-text">{{ soru.icerik }}</p>
+    <p class="card-text">
+      <small class="text-muted">{{ soru.kullanici }} - {{ soru.tarih|timesince }} önce</small>
+    </p>
+  </div>
+</div>
+
+<h3>Yorumlar</h3>
+<ul class="list-group mb-3" id="yorum-listesi">
+  {% for yorum in yorumlar %}
+  <li class="list-group-item">
+    <div class="d-flex flex-column">
+      <div>{{ yorum.icerik }}</div>
+      <div class="mt-auto text-end">
+        <small>
+          {{ yorum.kullanici.username }} - {{ yorum.tarih }}
+        </small>
+      </div>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+
+<h3>Yorum Ekle</h3>
+<form id="yorum-ekle-form" method="post" action="{% url 'yorum_ekle' soru.id %}">
+  {% csrf_token %}
+  {{ form.icerik }}
+  <button type="submit" class="btn btn-primary">Yorum Ekle</button>
+</form>
+
+<script>
+  function fetchSoruDetay(soruId) {
+    console.log("Fetching soru detay for ID:", soruId);
+    fetch(`/soru_detay/${soruId}/`)
+      .then((response) => response.text())
+      .then((data) => {
+        document.querySelector("#soru-detay-container").innerHTML = data;
+        // Buradaki kod yorum ekleme işlemi sonrası sayfayı yenilemek için eklendi.
+        const yorumEkleForm = document.querySelector("#yorum-ekle-form");
+        if (yorumEkleForm) {
+          yorumEkleForm.addEventListener("submit", handleYorumEkleFormSubmit);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching soru detay:", error);
+      });
+  }
+
+  function handleYorumEkleFormSubmit(event) {
+    event.preventDefault();
+
+    let form = event.target;
+    let formData = new FormData(form);
+
+    fetch(form.action, {
+      method: "POST",
+      body: formData,
+      headers: {
+        "X-CSRFToken": form.querySelector("[name=csrfmiddlewaretoken]").value,
+      },
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error("Yorum ekleme işlemi sırasında hata oluştu.");
+        }
+      })
+      .then((data) => {
+        // Yeni yorumu yorum listesine ekle
+        let yorumListesi = document.querySelector("#yorum-listesi");
+        let yeniYorum = document.createElement("li");
+        yeniYorum.classList.add("list-group-item");
+        yeniYorum.innerHTML = `<strong>${data.kullanici}: </strong>${data.yorum}<br><small>${data.tarih}</small>`;
+        yorumListesi.appendChild(yeniYorum);
+
+        // Yorum ekleme formunu temizle
+        form.reset();
+      })
+      .catch((error) => {
+        console.error("Yorum ekleme işlemi sırasında hata oluştu:", error);
+      });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    let soruLinkleri = document.querySelectorAll(".soru-link");
+
+    soruLinkleri.forEach(function (link) {
+      link.addEventListener("click", function (event) {
+        event.preventDefault();
+        let soruId = event.target.getAttribute("data-soru-id");
+        fetchSoruDetay(soruId);
+      });
+    });
+
+    // İlk yüklenen sayfadaki yorum ekleme formunu yakala
+    const yorumEkleForm = document.querySelector("#yorum-ekle-form");
+    if (yorumEkleForm) {
+      yorumEkleForm.addEventListener("submit", handleYorumEkleFormSubmit);
+    }
+  });
+</script>
+
+

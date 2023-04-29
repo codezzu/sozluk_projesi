@@ -1,0 +1,19 @@
+{% extends 'sorular/base.html' %}
+
+{% block content %}
+  <h2>Arama Sonuçları</h2>
+  <p>
+    <a href="{% url 'soru_ekle' %}?baslik={{ arama_sorgusu }}">"{{ arama_sorgusu }}" için yeni soru oluştur</a>
+  </p>
+  {% if sorular %}
+    <ul>
+    {% for soru in sorular %}
+      <li>
+        <a href="{% url 'soru_detay' soru_id=soru.id %}">{{ soru.baslik }}</a>
+      </li>
+    {% endfor %}
+    </ul>
+  {% else %}
+    <p>Arama kriterlerinize uyan bir sonuç bulunamadı.</p>
+  {% endif %}
+{% endblock %}

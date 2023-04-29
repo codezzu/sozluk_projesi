@@ -1,0 +1,10 @@
+{% extends 'sorular/base.html' %}
+
+{% block content %}
+  <h2>Yeni Soru Ekle</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Soru Ekle</button>
+  </form>
+{% endblock %}
